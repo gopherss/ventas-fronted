@@ -60,8 +60,8 @@ const ProductsView = () => {
 
                 {/* Botón "Añadir nueva categoría" */}
                 <Button
+                    color='from-blue-600 to-cyan-500'
                     onClick={() => setIsCreateModalOpen(true)}  // Abrir modal de creación
-                    className="mb-4 flex items-center justify-center space-x-2"
                 >
                     <Plus size={20} />
                 </Button>
@@ -80,11 +80,11 @@ const ProductsView = () => {
                                 {category.nombre}
                             </span>
                             <div className="flex">
-                                <button
+                                <Button
                                     onClick={() => category.id_categoria_producto && handleSelectCategoryToUpdate(category.id_categoria_producto, category.nombre)}
                                 >
                                     <Pencil size={20} />
-                                </button>
+                                </Button>
 
                             </div>
                         </div>
@@ -114,7 +114,7 @@ const ProductsView = () => {
                                     Crear
                                 </Button>
                                 <Button
-                                    color='bg-red-400'
+                                    color='from-rose-600 to-fuchsia-500'
                                     onClick={() => setIsCreateModalOpen(false)}  // Cerrar modal
                                 >
                                     Cancelar
@@ -152,7 +152,7 @@ const ProductsView = () => {
                                         setUpdateCategoryName('');
                                         setIsUpdateModalOpen(false); // Cerrar modal
                                     }}
-                                    color='bg-red-400'
+                                    color='from-rose-600 to-fuchsia-500'
                                 >
                                     Cancelar
                                 </Button>
