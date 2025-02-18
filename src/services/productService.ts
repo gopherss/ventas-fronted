@@ -63,3 +63,29 @@ export const updateCategoryProduct = async (token: string, negocioId: number, ca
 
     return result;
 };
+
+
+export const fetchProductsByBusiness = async (
+    token: string,
+    negocioId: number,
+    page: number = 1,
+    limit: number = 10
+): Promise<object> => {
+
+    const response = await fetch(`${API_URL}/negocio/${negocioId}?page=${page}&limit=${limit}`, {
+        method: "GET",
+        headers: {
+            Authorization: token,
+            "Content-Type": "application/json",
+        },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        console.error("Error al obtener productos:", result);
+        throw new Error(result.message || "Error desconocido");
+    }
+
+    return result;
+};

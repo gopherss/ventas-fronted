@@ -8,3 +8,4 @@ export { default as MessageLoading } from './MessageLoading.tsx';
 
 export { default as BusinessTable } from './BusinessTable.tsx';
 export { default as BusinessCategorySelect } from './BusinessCategorySelect.tsx';
+export { default as ProductsTable } from './ProductsTable.tsx';

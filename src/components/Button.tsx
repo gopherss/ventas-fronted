@@ -9,7 +9,7 @@ const Button = ({ children, isLoading, color = "from-purple-600 to-indigo-500", 
     return (
         <button
             {...props}
-            className={`relative w-full flex items-center justify-center p-3 text-white font-semibold rounded-xl 
+            className={`relative w-full flex items-center justify-center p-2 text-white font-semibold rounded-xl 
             bg-gradient-to-r ${color} shadow-lg shadow-purple-800/50 
             hover:shadow-indigo-500/50 transition-all duration-300 ease-out 
             hover:-translate-y-1 active:scale-95

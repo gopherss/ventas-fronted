@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Pencil, Plus } from 'lucide-react';
 import { useProductsViewModel } from '../viewmodels/productViewModel';
-import { Input, Button } from '../components';
+import { Input, Button, ProductsTable } from '../components';
 
 const ProductsView = () => {
     const {
+        products,
         categoriesProducts,
         error,
         loading,
         fetchCategoriesProductData,
         createCategory,
         updateCategory,
+        fetchProducts,
     } = useProductsViewModel();
 
     const [newCategoryName, setNewCategoryName] = useState('');
@@ -20,9 +22,17 @@ const ProductsView = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
+    const [page, setPage] = useState(1);
+    const limit = 10;  // Puedes ajustar el límite según tus necesidades
+
     useEffect(() => {
         fetchCategoriesProductData();
-    }, [fetchCategoriesProductData]);
+        fetchProducts(page, limit);
+    }, [fetchCategoriesProductData, fetchProducts, page]);
+
+    const handlePageChange = (newPage: number) => {
+        setPage(newPage);
+    };
 
     const handleCreateCategory = () => {
         if (newCategoryName.trim()) {
@@ -90,6 +100,24 @@ const ProductsView = () => {
                         </div>
                     ))}
                 </div>
+            </div>
+
+            {/* Products Panel */}
+            <div className="col-span-2 bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg">
+                <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Productos</h3>
+
+                {/* Mostrar mensaje de carga o error */}
+                {loading && <p className="text-center text-gray-500 dark:text-gray-400">Cargando productos...</p>}
+                {error && <div className="bg-red-100 text-red-700 p-4 rounded-md mb-4 text-center">{error}</div>}
+
+                {/* Tabla de productos */}
+                <ProductsTable
+                    products={products}
+                    total={products?.total}
+                    page={page}
+                    limit={limit}
+                    onPageChange={handlePageChange}
+                />
             </div>
 
             {/* Modal de Crear Nueva Categoría */}

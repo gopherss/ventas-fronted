@@ -1,19 +1,29 @@
-import { useCallback, useState } from 'react';
-import { fetchCategoriesProducts, createCategoryProduct, updateCategoryProduct } from '../services/productService';
-import { ProductCategoryModel, ProductModel } from '../models';
+import { useCallback, useEffect, useState } from 'react';
+import { fetchCategoriesProducts, createCategoryProduct, updateCategoryProduct, fetchProductsByBusiness } from '../services/productService';
+import { ProductCategoryModel } from '../models';
 import { useAuthStore } from '../stores/useAuthStore';
+import { useAuthViewModel } from './authViewModel';
 
 export const useProductsViewModel = () => {
     const { token } = useAuthStore();
-    const negocioId = 2; // Asumiendo que el negocioId es 2. Si este valor es dinámico, cambia esto según corresponda.
+    const { profile, loadProfile } = useAuthViewModel();
+    const negocioId = profile?.id_negocio;
+
     const [categoriesProducts, setCategoriesProducts] = useState<ProductCategoryModel[]>([]);
-    const [products, setProducts] = useState<ProductModel[]>([]);
+    const [products, setProducts] = useState<object>({});
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false); // Estado de carga
 
+    useEffect(() => {
+        if (token) {
+            loadProfile();
+        }
+    }, [loadProfile, token]);
+
+
     // Función para obtener las categorías de productos
     const fetchCategoriesProductData = useCallback(async () => {
-        if (!token) return;
+        if (!token || !negocioId) return;
         setLoading(true); // Activamos el loading al comenzar la solicitud
         try {
             const data: ProductCategoryModel[] = await fetchCategoriesProducts(token, negocioId); // Agregar negocioId
@@ -30,7 +40,7 @@ export const useProductsViewModel = () => {
 
     // Función para crear una nueva categoría de producto
     const createCategory = useCallback(async (nombre: string) => {
-        if (!token) return;
+        if (!token || !negocioId) return;
         setLoading(true);
         try {
             const newCategory = await createCategoryProduct(token, negocioId, nombre); // Pasamos negocioId
@@ -46,7 +56,7 @@ export const useProductsViewModel = () => {
 
     // Función para actualizar una categoría de producto
     const updateCategory = useCallback(async (categoriaId: number, nombre: string) => {
-        if (!token) return;
+        if (!token || !negocioId) return;
         setLoading(true);
         try {
             const updatedCategory = await updateCategoryProduct(token, negocioId, categoriaId, nombre); // Pasamos negocioId
@@ -64,5 +74,23 @@ export const useProductsViewModel = () => {
         }
     }, [token, negocioId]);
 
-    return { categoriesProducts, products, error, loading, fetchCategoriesProductData, createCategory, updateCategory };
+    // Función para obtener los productos de un negocio
+    const fetchProducts = useCallback(async (page: number = 1, limit: number = 10) => {
+        if (!token || !negocioId) return;
+        setLoading(true); // Activamos el loading al comenzar la solicitud
+
+        try {
+            const response = await fetchProductsByBusiness(token, negocioId, page, limit);
+            setProducts(response);
+            setError(null);
+        } catch (error) {
+            console.error('Error al obtener productos:', error);
+            setProducts([]); // Limpiamos los productos en caso de error
+            setError('Error al obtener productos');
+        } finally {
+            setLoading(false); // Desactivamos el loading cuando la solicitud finaliza
+        }
+    }, [token, negocioId]); // Asegúrate de incluir negocioId en las dependencias
+
+    return { categoriesProducts, products, error, loading, fetchCategoriesProductData, createCategory, updateCategory, fetchProducts };
 };

@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { ProductCategoryModel, ProductModel } from '../models';
-import { fetchCategoriesProducts, createCategoryProduct, updateCategoryProduct } from '../services/productService';
+import { fetchCategoriesProducts, createCategoryProduct, updateCategoryProduct, fetchProductsByBusiness } from '../services/productService';
 
 interface ProductsState {
-    products: ProductModel[];
+    products: object;
     categories: ProductCategoryModel[];
     loading: boolean;
     error: string | null;
@@ -14,6 +14,7 @@ interface ProductsState {
     fetchAllCategoriesProducts: (token: string, negocioId: number) => Promise<void>;
     createCategory: (token: string, negocioId: number, nombre: string) => Promise<void>;
     updateCategory: (token: string, negocioId: number, categoriaId: number, nombre: string) => Promise<void>;
+    fetchProducts: (token: string, negocioId: number, page: number, limit: number) => Promise<void>;
 }
 
 export const useProductsStores = create<ProductsState>((set) => ({
@@ -64,6 +65,20 @@ export const useProductsStores = create<ProductsState>((set) => ({
         } catch (error) {
             console.log(error);
             set({ error: 'Error al actualizar la categoría' });
+        } finally {
+            set({ loading: false });
+        }
+    },
+
+    // Método agregado para obtener productos por negocio
+    fetchProducts: async (token, negocioId, page, limit) => {
+        try {
+            set({ loading: true, error: null });
+            const data = await fetchProductsByBusiness(token, negocioId, page, limit);
+            set({ products: data });
+        } catch (error) {
+            console.log(error);
+            set({ error: 'Error al obtener productos' });
         } finally {
             set({ loading: false });
         }
