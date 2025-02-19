@@ -1,7 +1,7 @@
 import { Button } from '../components'
 import { ArrowLeftCircle, ArrowRightCircle } from 'lucide-react'
 import { ProductoModePagination } from '../models';
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useEffect } from 'react';
 
 interface Props {
     products: ProductoModePagination;
@@ -11,23 +11,31 @@ interface Props {
     onPageChange: (newPage: number) => void;
 }
 
+const COLUMN_STORAGE_KEY: string = "visibleColumns";
+
 const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) => {
     const [expandedDescriptions, setExpandedDescriptions] = useState<Record<number, boolean>>({});
-    const [visibleColumns, setVisibleColumns] = useState({
-        descripcion: true,
-        sku: true,
-        fecha_expiracion: true,
-        estatus: true,
+    const [visibleColumns, setVisibleColumns] = useState(() => {
+        const storedColumns = localStorage.getItem(COLUMN_STORAGE_KEY);
+        return storedColumns ? JSON.parse(storedColumns) : {
+            descripcion: true,
+            sku: true,
+            fecha_expiracion: true,
+            estatus: true,
+        };
     });
 
+    useEffect(() => {
+        localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(visibleColumns));
+    }, [visibleColumns]);
+
     const toggleColumnVisibility = (column: string) => {
-        setVisibleColumns({
-            ...visibleColumns,
-            [column]: !visibleColumns[column],
+        setVisibleColumns(prev => {
+            const updatedColumns = { ...prev, [column]: !prev[column] };
+            localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(updatedColumns));
+            return updatedColumns;
         });
     };
-
-
     const toggleDescription = (productId: number) => {
         setExpandedDescriptions({
             ...expandedDescriptions,
@@ -49,7 +57,13 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
         }
     };
 
-    const columns = [
+    interface PropsColumns {
+        key: string;
+        label: string;
+        alwaysVisible?: boolean | undefined;
+    };
+
+    const columns: PropsColumns[] = [
         { key: 'nombre', label: 'Producto', alwaysVisible: true },
         { key: 'descripcion', label: 'Descripción' },
         { key: 'sku', label: 'SKU' },
@@ -61,11 +75,24 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
     ];
 
     return (
-        <div className="overflow-x-auto shadow-lg rounded-lg">
+        <div className="overflow-x-auto shadow-lg rounded-lg p-4 bg-white dark:bg-gray-800">
+            {/* Información de productos */}
+            <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between"> {/* Flex column on small screens, row on medium and up */}
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 md:mb-0"> {/* Margin bottom only on small screens */}
+                    Total de productos: {total}
+                </h2>
+                <Button
+                    onClick={() => console.log('Creando Producto ...')}
+                    className="w-full md:w-auto" // Full width on small screens, auto width on medium and up
+                >
+                    Crear Producto
+                </Button>
+            </div>
+
             {/* Column Visibility Controls */}
-            <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-t-lg flex justify-end">
+            <div className="flex flex-wrap justify-center md:justify-start"> {/* Center on small screens, left-aligned on medium and up */}
                 {columns.filter(col => !col.alwaysVisible).map(col => (
-                    <label key={col.key} className="inline-flex items-center mr-4">
+                    <label key={col.key} className="inline-flex items-center mr-4 mb-2 md:mb-0">
                         <input
                             type="checkbox"
                             className="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
@@ -76,6 +103,8 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
                     </label>
                 ))}
             </div>
+
+            {/* Tabla de productos */}
             <table className="min-w-full table-auto">
                 <thead className="bg-gray-100 dark:bg-gray-700">
                     <tr>
@@ -84,6 +113,9 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
                                 {col.label}
                             </th>
                         ))}
+                        <th className='px-4 py-2 text-sm font-semibold text-gray-900 dark:text-white'>
+                            Editar
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -91,7 +123,7 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
                         const isExpanded = expandedDescriptions[product.id_producto] || false;
                         const shortDescription = product.descripcion?.length > 30
                             ? product.descripcion.substring(0, 30) + '...'
-                            : product.descripcion || ""; // Handle undefined descriptions
+                            : product.descripcion || "N/A";
 
                         return (
                             <tr key={product.id_producto} className="hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
@@ -111,7 +143,7 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
                                                 )}
                                             </Fragment>
                                         )}
-                                        {col.key === 'sku' && (product.sku?.length !== undefined ? product.sku : 'N/A')}
+                                        {col.key === 'sku' && (product.sku ? product.sku : 'N/A')}
                                         {col.key === 'precio' && `S/ ${product.precio}`}
                                         {col.key === 'stock' && product.stock}
                                         {col.key === 'tipo_unidad' && product.tipo_unidad}
@@ -123,11 +155,21 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
                                         )}
                                     </td>
                                 ))}
+
+                                <td>
+                                    <Button
+                                        color='from-emerald-600 to-green-500'
+                                        onClick={() => { console.log('Editando...') }}
+                                    >
+                                        Editar
+                                    </Button>
+                                </td>
                             </tr>
                         );
                     })}
                 </tbody>
             </table>
+
             {/* Paginación */}
             <div className="flex justify-between items-center mt-4 gap-2">
                 <Button
@@ -141,7 +183,8 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
                 </span>
                 <Button
                     className="px-2 py-1 text-sm"
-                    onClick={() => onPageChange(page + 1)} disabled={page * limit >= total}>
+                    onClick={() => onPageChange(page + 1)}
+                    disabled={page >= Math.ceil(total / limit)}>
                     <ArrowRightCircle />
                 </Button>
             </div>

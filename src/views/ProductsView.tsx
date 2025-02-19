@@ -59,7 +59,7 @@ const ProductsView = () => {
     };
 
     return (
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3">
             <div className="col-span-1 bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg">
                 <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
                     Categorías de Productos
