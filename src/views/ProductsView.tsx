@@ -59,7 +59,7 @@ const ProductsView = () => {
     };
 
     return (
-        <div className="p-6 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3">
             <div className="col-span-1 bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg">
                 <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
                     Categorías de Productos
@@ -76,9 +76,7 @@ const ProductsView = () => {
                     <Plus size={20} />
                 </Button>
 
-                <div className="mt-2 max-h-80 overflow-y-auto border border-gray-300 dark:border-gray-700 rounded-lg 
-                bg-white dark:bg-gray-900 shadow-lg scrollbar-thin scrollbar-thumb-gray-400 
-                dark:scrollbar-thumb-gray-600 scrollbar-track-gray-200 dark:scrollbar-track-gray-800">
+                <div className="mt-2 max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 shadow-lg">
                     {categoriesProducts.map((category) => (
                         <div
                             key={category.id_categoria_producto}

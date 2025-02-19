@@ -1,13 +1,32 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthViewModel } from '../viewmodels/authViewModel';
 import { Button, Input } from '../components';
-import { Eye, EyeOff, UserCircle2, LogIn } from 'lucide-react'; // Importa íconos de lucide-react
+import { Eye, EyeOff, UserCircle2, LogIn } from 'lucide-react';
+
+// Importar múltiples imágenes
+import img1 from '../assets/background1.webp';
+import img2 from '../assets/background2.webp';
+import img3 from '../assets/background3.webp';
+import img4 from '../assets/background4.webp';
+import img5 from '../assets/background5.webp';
+
+const images = [img1, img2, img3, img4, img5]; // Array de imágenes
 
 const LoginView = () => {
     const { handleLogin, error, loading } = useAuthViewModel();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false); // Estado para controlar la visibilidad de la contraseña
+    const [background, setBackground] = useState(images[Math.floor(Math.random() * images.length)]); // Imagen inicial aleatoria
+
+    // Cambiar la imagen automáticamente cada 5 segundos
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setBackground(images[Math.floor(Math.random() * images.length)]);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, []);
 
     const onSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -15,9 +34,18 @@ const LoginView = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+        <div
+            className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900"
+            style={{
+                backgroundImage: `url(${background})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                transition: 'background-image 1s ease-in-out' // Transición suave
+            }}
+        >
             <div className="w-full max-w-md p-8 space-y-6 rounded-xl 
-                bg-white dark:bg-gray-800 
+                bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 
                 shadow-lg border border-gray-200 dark:border-gray-700">
                 <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
                     Iniciar Sesión
