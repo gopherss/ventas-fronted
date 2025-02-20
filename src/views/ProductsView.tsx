@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil, Plus, ScanSearch, SearchCheck, SearchIcon, XIcon } from 'lucide-react';
 import { useProductsViewModel } from '../viewmodels/productViewModel';
 import { Input, Button, ProductsTable } from '../components';
 
@@ -18,6 +18,7 @@ const ProductsView = () => {
     const [newCategoryName, setNewCategoryName] = useState('');
     const [updateCategoryName, setUpdateCategoryName] = useState('');
     const [categoryToUpdate, setCategoryToUpdate] = useState<number | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -27,7 +28,7 @@ const ProductsView = () => {
 
     useEffect(() => {
         fetchCategoriesProductData();
-        fetchProducts(page, limit);
+        fetchProducts(page, limit,);
     }, [fetchCategoriesProductData, fetchProducts, page]);
 
     const handlePageChange = (newPage: number) => {
@@ -64,6 +65,7 @@ const ProductsView = () => {
                 <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
                     Categorías de Productos
                 </h3>
+
 
                 {loading && <p className="text-center text-gray-500 dark:text-gray-400">Cargando categorías...</p>}
                 {error && <div className="bg-red-100 text-red-700 p-4 rounded-md mb-4 text-center">{error}</div>}
@@ -103,7 +105,40 @@ const ProductsView = () => {
             {/* Products Panel */}
             <div className="col-span-2 bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg">
                 <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">Productos</h3>
-
+                <div className="relative flex ">
+                    <input
+                        autoFocus
+                        type="text"
+                        placeholder="Buscar..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                fetchProducts(page, limit, searchTerm);
+                            }
+                        }}
+                        className="w-full px-4 py-2 pr-20 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                    />
+                    <div className="absolute right-0 flex items-center h-full pr-2">
+                        {searchTerm && (
+                            <button
+                                onClick={() => {
+                                    setSearchTerm('');
+                                    fetchProducts(page, limit, '');
+                                }}
+                                className="p-1 mr-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                            >
+                                <XIcon size={20} />
+                            </button>
+                        )}
+                        <button
+                            onClick={() => fetchProducts(page, limit, searchTerm)}
+                            className="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                        >
+                            <SearchIcon size={20} />
+                        </button>
+                    </div>
+                </div>
                 {/* Mostrar mensaje de carga o error */}
                 {loading && <p className="text-center text-gray-500 dark:text-gray-400">Cargando productos...</p>}
                 {error && <div className="bg-red-100 text-red-700 p-4 rounded-md mb-4 text-center">{error}</div>}

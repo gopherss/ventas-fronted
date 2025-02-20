@@ -75,17 +75,17 @@ export const useProductsViewModel = () => {
     }, [token, negocioId]);
 
     // Función para obtener los productos de un negocio
-    const fetchProducts = useCallback(async (page: number = 1, limit: number = 10) => {
+    const fetchProducts = useCallback(async (page: number = 1, limit: number = 10, search?: string) => {
         if (!token || !negocioId) return;
         setLoading(true); // Activamos el loading al comenzar la solicitud
 
         try {
-            const response = await fetchProductsByBusiness(token, negocioId, page, limit);
-            setProducts(response);
+            const response = await fetchProductsByBusiness(token, negocioId, page, limit, search);
+            setProducts(response || {});
             setError(null);
         } catch (error) {
             console.error('Error al obtener productos:', error);
-            setProducts([]); // Limpiamos los productos en caso de error
+            setProducts({}); // Limpiamos los productos en caso de error
             setError('Error al obtener productos');
         } finally {
             setLoading(false); // Desactivamos el loading cuando la solicitud finaliza

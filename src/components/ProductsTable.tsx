@@ -25,6 +25,14 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
         };
     });
 
+    const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+        setIsVisible(false);
+        const timeout = setTimeout(() => setIsVisible(true), 200);
+        return () => clearTimeout(timeout);
+    }, [products]);
+
     useEffect(() => {
         localStorage.setItem(COLUMN_STORAGE_KEY, JSON.stringify(visibleColumns));
     }, [visibleColumns]);
@@ -75,7 +83,7 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
     ];
 
     return (
-        <div className="overflow-x-auto shadow-lg rounded-lg p-4 bg-white dark:bg-gray-800">
+        <div className="mt-5 overflow-x-auto shadow-lg rounded-lg p-4 bg-white dark:bg-gray-800">
             {/* Información de productos */}
             <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between"> {/* Flex column on small screens, row on medium and up */}
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 md:mb-0"> {/* Margin bottom only on small screens */}
@@ -105,7 +113,7 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
             </div>
 
             {/* Tabla de productos */}
-            <table className="min-w-full table-auto">
+            <table className={`min-w-full table-auto transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
                 <thead className="bg-gray-100 dark:bg-gray-700">
                     <tr>
                         {columns.map(col => (

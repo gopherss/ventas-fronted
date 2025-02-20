@@ -69,10 +69,16 @@ export const fetchProductsByBusiness = async (
     token: string,
     negocioId: number,
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
+    search?: string
 ): Promise<object> => {
+    const url = new URL(`${API_URL}/negocio/${negocioId}`);
+    url.searchParams.append("page", page.toString());
+    url.searchParams.append("limit", limit.toString());
+    if (search) url.searchParams.append("search", search.toLowerCase());
 
-    const response = await fetch(`${API_URL}/negocio/${negocioId}?page=${page}&limit=${limit}`, {
+
+    const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
             Authorization: token,

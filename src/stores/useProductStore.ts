@@ -14,7 +14,7 @@ interface ProductsState {
     fetchAllCategoriesProducts: (token: string, negocioId: number) => Promise<void>;
     createCategory: (token: string, negocioId: number, nombre: string) => Promise<void>;
     updateCategory: (token: string, negocioId: number, categoriaId: number, nombre: string) => Promise<void>;
-    fetchProducts: (token: string, negocioId: number, page: number, limit: number) => Promise<void>;
+    fetchProducts: (token: string, negocioId: number, page: number, limit: number, search?: string) => Promise<void>;
 }
 
 export const useProductsStores = create<ProductsState>((set) => ({
@@ -71,10 +71,10 @@ export const useProductsStores = create<ProductsState>((set) => ({
     },
 
     // Método agregado para obtener productos por negocio
-    fetchProducts: async (token, negocioId, page, limit) => {
+    fetchProducts: async (token, negocioId, page, limit, search) => {
         try {
             set({ loading: true, error: null });
-            const data = await fetchProductsByBusiness(token, negocioId, page, limit);
+            const data = await fetchProductsByBusiness(token, negocioId, page, limit, search);
             set({ products: data });
         } catch (error) {
             console.log(error);
