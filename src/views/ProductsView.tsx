@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pencil, Plus, ScanSearch, SearchCheck, SearchIcon, XIcon } from 'lucide-react';
+import { Pencil, Plus, SearchIcon, XIcon } from 'lucide-react';
 import { useProductsViewModel } from '../viewmodels/productViewModel';
 import { Input, Button, ProductsTable } from '../components';
 
@@ -100,6 +100,7 @@ const ProductsView = () => {
                         </div>
                     ))}
                 </div>
+
             </div>
 
             {/* Products Panel */}

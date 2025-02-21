@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { ProductCategoryModel, ProductModel } from '../models';
-import { fetchCategoriesProducts, createCategoryProduct, updateCategoryProduct, fetchProductsByBusiness } from '../services/productService';
+import {
+    fetchCategoriesProducts, createCategoryProduct,
+    updateCategoryProduct, fetchProductsByBusiness,
+    createProduct,
+} from '../services/productService';
 
 interface ProductsState {
     products: object;
@@ -15,6 +19,7 @@ interface ProductsState {
     createCategory: (token: string, negocioId: number, nombre: string) => Promise<void>;
     updateCategory: (token: string, negocioId: number, categoriaId: number, nombre: string) => Promise<void>;
     fetchProducts: (token: string, negocioId: number, page: number, limit: number, search?: string) => Promise<void>;
+    createProduct: (token: string, productData: ProductModel) => Promise<void>;
 }
 
 export const useProductsStores = create<ProductsState>((set) => ({
@@ -79,6 +84,20 @@ export const useProductsStores = create<ProductsState>((set) => ({
         } catch (error) {
             console.log(error);
             set({ error: 'Error al obtener productos' });
+        } finally {
+            set({ loading: false });
+        }
+    },
+
+    // función para crear un producto
+    createProduct: async (token, productData) => {
+        try {
+            set({ loading: true, error: null });
+            const newProduct = await createProduct(token, productData);
+            set((state) => ({ products: [...state.products, newProduct] }));
+        } catch (error) {
+            console.error(error);
+            set({ error: 'Error al crear el producto' });
         } finally {
             set({ loading: false });
         }

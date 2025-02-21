@@ -1,7 +1,8 @@
 import { Button } from '../components'
-import { ArrowLeftCircle, ArrowRightCircle } from 'lucide-react'
-import { ProductoModePagination } from '../models';
+import { ArrowLeftCircle, ArrowRightCircle, PenBoxIcon } from 'lucide-react'
+import { ProductModel, ProductoModePagination } from '../models';
 import { useState, Fragment, useEffect } from 'react';
+import CreateProductModal from "./CreateProductModal";
 
 interface Props {
     products: ProductoModePagination;
@@ -26,6 +27,13 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
     });
 
     const [isVisible, setIsVisible] = useState(false);
+
+    const [isCreateProductModalOpen, setIsCreateProductModalOpen] = useState(false);
+
+    const handleCreateProduct = (product: ProductModel) => {
+        console.log("Nuevo producto creado:", product);
+        // Aquí podrías hacer una llamada a tu API para guardar el producto
+    };
 
     useEffect(() => {
         setIsVisible(false);
@@ -89,13 +97,16 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 md:mb-0"> {/* Margin bottom only on small screens */}
                     Total de productos: {total}
                 </h2>
-                <Button
-                    onClick={() => console.log('Creando Producto ...')}
-                    className="w-full md:w-auto" // Full width on small screens, auto width on medium and up
-                >
+                <Button onClick={() => setIsCreateProductModalOpen(true)}>
                     Crear Producto
                 </Button>
             </div>
+
+            <CreateProductModal
+                isOpen={isCreateProductModalOpen}
+                onClose={() => setIsCreateProductModalOpen(false)}
+                onCreate={handleCreateProduct}
+            />
 
             {/* Column Visibility Controls */}
             <div className="flex flex-wrap justify-center md:justify-start"> {/* Center on small screens, left-aligned on medium and up */}
@@ -169,7 +180,7 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
                                         color='from-emerald-600 to-green-500'
                                         onClick={() => { console.log('Editando...') }}
                                     >
-                                        Editar
+                                        <PenBoxIcon size={20} />
                                     </Button>
                                 </td>
                             </tr>

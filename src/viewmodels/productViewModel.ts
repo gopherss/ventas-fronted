@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { fetchCategoriesProducts, createCategoryProduct, updateCategoryProduct, fetchProductsByBusiness } from '../services/productService';
-import { ProductCategoryModel } from '../models';
+import {
+    fetchCategoriesProducts, createCategoryProduct,
+    updateCategoryProduct, fetchProductsByBusiness,
+    createProduct
+} from '../services/productService';
+import { ProductCategoryModel, ProductModel } from '../models';
 import { useAuthStore } from '../stores/useAuthStore';
 import { useAuthViewModel } from './authViewModel';
 
@@ -92,5 +96,33 @@ export const useProductsViewModel = () => {
         }
     }, [token, negocioId]); // Asegúrate de incluir negocioId en las dependencias
 
-    return { categoriesProducts, products, error, loading, fetchCategoriesProductData, createCategory, updateCategory, fetchProducts };
+    // función para crear un producto
+    const createNewProduct = useCallback(async (productData: ProductModel) => {
+        if (!token) return;
+        setLoading(true);
+        try {
+            const newProduct = await createProduct(token, productData);
+
+            // Verificar que newProduct sea válido
+            if (!newProduct || typeof newProduct !== "object") {
+                console.error("El producto creado no es válido:", newProduct);
+                return;
+            }
+
+            setProducts((prev) => (Array.isArray(prev) ? [...prev, newProduct] : [newProduct]));
+            setError(null);
+        } catch (error) {
+            console.error("Error al crear el producto:", error);
+            setError("Error al crear el producto");
+        } finally {
+            setLoading(false);
+        }
+    }, [token]);
+
+
+    return {
+        categoriesProducts, products, error, loading,
+        fetchCategoriesProductData, createCategory,
+        updateCategory, fetchProducts, createNewProduct
+    };
 };

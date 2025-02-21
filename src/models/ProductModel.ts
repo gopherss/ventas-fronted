@@ -12,10 +12,10 @@ export interface ProductModel {
     precio: number;
     stock: number;
     tipo_unidad: string;
-    estatus: boolean;
+    estatus?: boolean;
     fecha_expiracion?: Date;
     id_negocio?: number;
-    createdBy: number;
+    createdBy?: number;
     id_categoria_producto?: number;
 }
 

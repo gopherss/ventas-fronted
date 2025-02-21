@@ -1,4 +1,5 @@
 import URI_BACKEND from "../config";
+import { ProductModel } from "../models";
 
 const API_URL = URI_BACKEND + '/productos';
 
@@ -90,6 +91,27 @@ export const fetchProductsByBusiness = async (
 
     if (!response.ok) {
         console.error("Error al obtener productos:", result);
+        throw new Error(result.message || "Error desconocido");
+    }
+
+    return result;
+};
+
+
+export const createProduct = async (token: string, productData: ProductModel): Promise<ProductModel> => {
+    const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+            "Authorization": token,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productData),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        console.error("Error al crear producto:", result);
         throw new Error(result.message || "Error desconocido");
     }
 
