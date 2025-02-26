@@ -4,23 +4,31 @@ export interface ProductCategoryModel {
     nombre: string;
 }
 
+// Modelo para cada producto individual
 export interface ProductModel {
     id_producto?: number;
     nombre: string;
     descripcion: string;
-    sku?: string;
+    sku?: string | null;
     precio: number;
     stock: number;
     tipo_unidad: string;
     estatus?: boolean;
-    fecha_expiracion?: Date;
+    fecha_expiracion?: Date | null;
     id_negocio?: number;
     createdBy?: number;
     id_categoria_producto?: number;
+    categoriaProducto?: {
+        nombre: string,
+    };
+    createdAt?: string;
+    updatedAt?: string;
 }
 
-export interface ProductoModePagination extends ProductModel {
-    categoriaProducto: {
-        nombre: string,
-    }
+// Interfaz para la respuesta paginada de productos
+export interface ProductsPaginationResponse {
+    total: number;
+    page: number;
+    limit: number;
+    data: ProductModel[];
 }

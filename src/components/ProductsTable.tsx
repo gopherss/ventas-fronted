@@ -1,21 +1,26 @@
 import { Button } from '../components'
 import { ArrowLeftCircle, ArrowRightCircle, PenBoxIcon } from 'lucide-react'
-import { ProductModel, ProductoModePagination } from '../models';
+import { ProductModel, ProductsPaginationResponse } from '../models';
 import { useState, Fragment, useEffect } from 'react';
 import CreateProductModal from "./CreateProductModal";
+import { useProductsViewModel } from '../viewmodels/productViewModel';
+import EditProductModal from './EditProductModal';
 
 interface Props {
-    products: ProductoModePagination;
+    products: ProductsPaginationResponse;
     total: number;
     page: number;
     limit: number;
     onPageChange: (newPage: number) => void;
+    updateExistingProduct: (productId: number, productData: ProductModel) => Promise<ProductModel | null>;
 }
 
 const COLUMN_STORAGE_KEY: string = "visibleColumns";
 
 const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) => {
+    const { updateExistingProduct } = useProductsViewModel();
     const [expandedDescriptions, setExpandedDescriptions] = useState<Record<number, boolean>>({});
+    const [editingProduct, setEditingProduct] = useState<ProductModel | null>(null);
     const [visibleColumns, setVisibleColumns] = useState(() => {
         const storedColumns = localStorage.getItem(COLUMN_STORAGE_KEY);
         return storedColumns ? JSON.parse(storedColumns) : {
@@ -27,13 +32,7 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
     });
 
     const [isVisible, setIsVisible] = useState(false);
-
     const [isCreateProductModalOpen, setIsCreateProductModalOpen] = useState(false);
-
-    const handleCreateProduct = (product: ProductModel) => {
-        console.log("Nuevo producto creado:", product);
-        // Aquí podrías hacer una llamada a tu API para guardar el producto
-    };
 
     useEffect(() => {
         setIsVisible(false);
@@ -73,6 +72,28 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
         }
     };
 
+    const handleEditClick = (product: ProductModel) => {
+        setEditingProduct(product);
+    };
+
+    const handleUpdateProduct = async (updatedProduct: ProductModel) => {
+        if (editingProduct) {
+            console.log("Actualizando producto:", editingProduct.id_producto, updatedProduct);
+            const result = await updateExistingProduct(editingProduct.id_producto!, updatedProduct);
+
+            if (result) {
+                console.log("Producto actualizado con éxito:", result);
+                // Forzar un refresco de los datos
+                onPageChange(page);
+            } else {
+                console.error("Error: No se pudo actualizar el producto");
+            }
+
+            setEditingProduct(null);
+        }
+    };
+
+
     interface PropsColumns {
         key: string;
         label: string;
@@ -90,6 +111,7 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
         { key: 'estatus', label: 'Estado' },
     ];
 
+
     return (
         <div className="mt-5 overflow-x-auto shadow-lg rounded-lg p-4 bg-white dark:bg-gray-800">
             {/* Información de productos */}
@@ -105,7 +127,6 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
             <CreateProductModal
                 isOpen={isCreateProductModalOpen}
                 onClose={() => setIsCreateProductModalOpen(false)}
-                onCreate={handleCreateProduct}
             />
 
             {/* Column Visibility Controls */}
@@ -138,14 +159,14 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
                     </tr>
                 </thead>
                 <tbody>
-                    {products?.data?.map((product: ProductoModePagination) => {
+                    {products?.data?.map((product: ProductModel, index: number) => {
                         const isExpanded = expandedDescriptions[product.id_producto] || false;
                         const shortDescription = product.descripcion?.length > 30
                             ? product.descripcion.substring(0, 30) + '...'
                             : product.descripcion || "N/A";
 
                         return (
-                            <tr key={product.id_producto} className="hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+                            <tr key={product.id_producto + '' + index} className="hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
                                 {columns.map(col => (
                                     <td key={col.key} className={`px-4 py-2 text-sm text-gray-900 dark:text-white ${!col.alwaysVisible && !visibleColumns[col.key] ? 'hidden' : ''}`}>
                                         {col.key === 'nombre' && product.nombre}
@@ -176,12 +197,23 @@ const ProductsTable = ({ products, total, page, limit, onPageChange }: Props) =>
                                 ))}
 
                                 <td>
+                                    {/* Botón de edición */}
                                     <Button
                                         color='from-emerald-600 to-green-500'
-                                        onClick={() => { console.log('Editando...') }}
+                                        onClick={() => handleEditClick(product)}
                                     >
                                         <PenBoxIcon size={20} />
                                     </Button>
+
+                                    {/* Modal de edición */}
+                                    {editingProduct && (
+                                        <EditProductModal
+                                            product={editingProduct}
+                                            isOpen={!!editingProduct}
+                                            onClose={() => setEditingProduct(null)}
+                                            onUpdate={handleUpdateProduct}
+                                        />
+                                    )}
                                 </td>
                             </tr>
                         );

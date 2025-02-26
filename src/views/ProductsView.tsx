@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Pencil, Plus, SearchIcon, XIcon } from 'lucide-react';
 import { useProductsViewModel } from '../viewmodels/productViewModel';
 import { Input, Button, ProductsTable } from '../components';
@@ -6,13 +6,13 @@ import { Input, Button, ProductsTable } from '../components';
 const ProductsView = () => {
     const {
         products,
-        categoriesProducts,
+        categories,
         error,
         loading,
-        fetchCategoriesProductData,
         createCategory,
         updateCategory,
         fetchProducts,
+        updateExistingProduct
     } = useProductsViewModel();
 
     const [newCategoryName, setNewCategoryName] = useState('');
@@ -26,13 +26,10 @@ const ProductsView = () => {
     const [page, setPage] = useState(1);
     const limit = 10;  // Puedes ajustar el límite según tus necesidades
 
-    useEffect(() => {
-        fetchCategoriesProductData();
-        fetchProducts(page, limit,);
-    }, [fetchCategoriesProductData, fetchProducts, page]);
 
     const handlePageChange = (newPage: number) => {
         setPage(newPage);
+        fetchProducts(newPage, limit, searchTerm);
     };
 
     const handleCreateCategory = () => {
@@ -59,6 +56,7 @@ const ProductsView = () => {
         setIsUpdateModalOpen(true);  // Abrir modal de actualización
     };
 
+
     return (
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3">
             <div className="col-span-1 bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg">
@@ -79,7 +77,7 @@ const ProductsView = () => {
                 </Button>
 
                 <div className="mt-2 max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 shadow-lg">
-                    {categoriesProducts.map((category) => (
+                    {categories.map((category) => (
                         <div
                             key={category.id_categoria_producto}
                             className="p-4 flex justify-between items-center border-b border-gray-300 dark:border-gray-700
@@ -151,6 +149,7 @@ const ProductsView = () => {
                     page={page}
                     limit={limit}
                     onPageChange={handlePageChange}
+                    updateExistingProduct={updateExistingProduct}
                 />
             </div>
 

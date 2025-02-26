@@ -1,105 +1,114 @@
 import { create } from 'zustand';
 import { ProductCategoryModel, ProductModel } from '../models';
-import {
-    fetchCategoriesProducts, createCategoryProduct,
-    updateCategoryProduct, fetchProductsByBusiness,
-    createProduct,
-} from '../services/productService';
 
 interface ProductsState {
     products: object;
     categories: ProductCategoryModel[];
     loading: boolean;
     error: string | null;
-    setProducts: (products: ProductModel[]) => void;
+    setProducts: (products: object) => void;
     setCategories: (categories: ProductCategoryModel[]) => void;
     setLoading: (loading: boolean) => void;
     setError: (error: string | null) => void;
-    fetchAllCategoriesProducts: (token: string, negocioId: number) => Promise<void>;
-    createCategory: (token: string, negocioId: number, nombre: string) => Promise<void>;
-    updateCategory: (token: string, negocioId: number, categoriaId: number, nombre: string) => Promise<void>;
-    fetchProducts: (token: string, negocioId: number, page: number, limit: number, search?: string) => Promise<void>;
-    createProduct: (token: string, productData: ProductModel) => Promise<void>;
+    addCategory: (category: ProductCategoryModel) => void;
+    updateCategoryInStore: (categoryId: number, updatedCategory: ProductCategoryModel) => void;
+    addProduct: (product: ProductModel) => void;
+    updateProductInStore: (productId: number, updatedProduct: ProductModel) => void;
+    resetState: () => void;
 }
 
-export const useProductsStores = create<ProductsState>((set) => ({
-    products: [],
+const initialState = {
+    products: {},
     categories: [],
     loading: false,
     error: null,
+};
+
+export const useProductsStores = create<ProductsState>((set) => ({
+    ...initialState,
+
+    // Basic state setters
     setProducts: (products) => set({ products }),
     setCategories: (categories) => set({ categories }),
     setLoading: (loading) => set({ loading }),
     setError: (error) => set({ error }),
 
-    fetchAllCategoriesProducts: async (token, negocioId) => {
-        try {
-            set({ loading: true, error: null });
-            const data = await fetchCategoriesProducts(token, negocioId);
-            set({ categories: data });
-        } catch (error) {
-            console.log(error);
-            set({ error: 'Error al cargar las categorías' });
-        } finally {
-            set({ loading: false });
-        }
-    },
+    // More specific state updaters
+    addCategory: (category) => set((state) => ({
+        categories: [...state.categories, category]
+    })),
 
-    createCategory: async (token, negocioId, nombre) => {
-        try {
-            set({ loading: true, error: null });
-            const newCategory = await createCategoryProduct(token, negocioId, nombre);
-            set((state) => ({ categories: [...state.categories, newCategory] }));
-        } catch (error) {
-            console.log(error);
-            set({ error: 'Error al crear la categoría' });
-        } finally {
-            set({ loading: false });
-        }
-    },
+    updateCategoryInStore: (categoryId, updatedCategory) => set((state) => ({
+        categories: state.categories.map((cat) =>
+            cat.id_categoria_producto === categoryId ? updatedCategory : cat
+        ),
+    })),
 
-    updateCategory: async (token, negocioId, categoriaId, nombre) => {
-        try {
-            set({ loading: true, error: null });
-            const updatedCategory = await updateCategoryProduct(token, negocioId, categoriaId, nombre);
-            set((state) => ({
-                categories: state.categories.map((cat) =>
-                    cat.id_categoria_producto === categoriaId ? updatedCategory : cat
-                ),
-            }));
-        } catch (error) {
-            console.log(error);
-            set({ error: 'Error al actualizar la categoría' });
-        } finally {
-            set({ loading: false });
-        }
-    },
+    addProduct: (product) => set((state) => {
+        const currentProducts = state.products as any;
 
-    // Método agregado para obtener productos por negocio
-    fetchProducts: async (token, negocioId, page, limit, search) => {
-        try {
-            set({ loading: true, error: null });
-            const data = await fetchProductsByBusiness(token, negocioId, page, limit, search);
-            set({ products: data });
-        } catch (error) {
-            console.log(error);
-            set({ error: 'Error al obtener productos' });
-        } finally {
-            set({ loading: false });
+        // Check if products is an array (for backward compatibility)
+        if (Array.isArray(currentProducts)) {
+            return { products: [...currentProducts, product] };
         }
-    },
 
-    // función para crear un producto
-    createProduct: async (token, productData) => {
-        try {
-            set({ loading: true, error: null });
-            const newProduct = await createProduct(token, productData);
-            set((state) => ({ products: [...state.products, newProduct] }));
-        } catch (error) {
-            console.error(error);
-            set({ error: 'Error al crear el producto' });
-        } finally {
-            set({ loading: false });
+        // If it's an object with pagination structure
+        if (currentProducts.data && Array.isArray(currentProducts.data)) {
+            return {
+                products: {
+                    ...currentProducts,
+                    data: [...currentProducts.data, product],
+                    total: (currentProducts.total || 0) + 1
+                }
+            };
         }
-    },
+
+        // Fallback if structure is unknown
+        return { products: { data: [product], total: 1 } };
+    }),
+
+    // New function to update a product in the store
+    // En useProductsStores.ts
+
+    // Actualizar la función updateProductInStore
+    updateProductInStore: (productId, updatedProduct) => set((state) => {
+        const currentProducts = state.products as any;
+        console.log("Estado actual:", currentProducts);
+        console.log("Actualizando producto ID:", productId, "con:", updatedProduct);
+
+        // Si es un objeto con estructura de paginación
+        if (currentProducts.data && Array.isArray(currentProducts.data)) {
+            const updatedData = currentProducts.data.map(product => {
+                if (product.id_producto === productId) {
+                    console.log("Encontrado producto a actualizar:", product.id_producto);
+                    return { ...product, ...updatedProduct };
+                }
+                return product;
+            });
+
+            console.log("Datos actualizados:", updatedData);
+
+            return {
+                products: {
+                    ...currentProducts,
+                    data: updatedData
+                }
+            };
+        }
+
+        // Si es un array simple
+        if (Array.isArray(currentProducts)) {
+            const updatedProducts = currentProducts.map(product =>
+                product.id_producto === productId ? { ...product, ...updatedProduct } : product
+            );
+
+            return { products: updatedProducts };
+        }
+
+        // Si la estructura no es reconocida, retornar sin cambios
+        console.warn("Estructura de productos no reconocida:", currentProducts);
+        return { products: currentProducts };
+    }),
+    // Reset state to initial values
+    resetState: () => set(initialState),
 }));

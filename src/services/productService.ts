@@ -97,7 +97,6 @@ export const fetchProductsByBusiness = async (
     return result;
 };
 
-
 export const createProduct = async (token: string, productData: ProductModel): Promise<ProductModel> => {
     const response = await fetch(API_URL, {
         method: "POST",
@@ -112,6 +111,26 @@ export const createProduct = async (token: string, productData: ProductModel): P
 
     if (!response.ok) {
         console.error("Error al crear producto:", result);
+        throw new Error(result.message || "Error desconocido");
+    }
+
+    return result;
+};
+
+export const updateProduct = async (token: string, productId: number, productData: ProductModel): Promise<ProductModel> => {
+    const response = await fetch(`${API_URL}/${productId}`, {
+        method: "PUT",
+        headers: {
+            "Authorization": token,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productData),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        console.error("Error al actualizar producto:", result);
         throw new Error(result.message || "Error desconocido");
     }
 
