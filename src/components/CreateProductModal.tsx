@@ -13,7 +13,7 @@ interface PropsCreateProduct {
 
 const CreateProductModal = ({ isOpen, onClose }: PropsCreateProduct) => {
     const { token, profile, loadProfile } = useAuthViewModel();
-    const { createNewProduct, categoriesProducts, fetchCategoriesProductData } = useProductsViewModel();
+    const { createNewProduct, categories, fetchCategoriesProductData } = useProductsViewModel();
 
     useEffect(() => {
         if (token) {
@@ -87,7 +87,7 @@ const CreateProductModal = ({ isOpen, onClose }: PropsCreateProduct) => {
                     <Input label="Unidad" name="tipo_unidad" value={newProduct.tipo_unidad} onChange={handleChange} />
                     <Select
                         label="Categoría"
-                        options={Array.isArray(categoriesProducts) ? categoriesProducts.map(category => ({
+                        options={Array.isArray(categories) ? categories.map(category => ({
                             value: category.id_categoria_producto.toString(),
                             label: category.nombre
                         })) : []}
